@@ -1,5 +1,6 @@
 import { makeAutoObservable } from "mobx";
 import instance from "./instance";
+import axios from "axios";
 
 class ProductStore {
   constructor() {
@@ -10,8 +11,10 @@ class ProductStore {
 
   createProduct = async (newProduct) => {
     try {
-      const response = await instance.post("/products", newProduct);
-      this.products.push(response.data);
+      const formData = new FormData();
+      for (const key in newProduct) formData.append(key, newProduct[key]);
+      const res = await axios.post("http://localhost:8000/products", formData);
+      this.products.push(res.data);
     } catch (error) {
       console.log(
         "🚀 ~ file: productStore.js ~ line 16 ~ ProductStore ~ createProduct= ~ error",
@@ -31,9 +34,12 @@ class ProductStore {
 
   updateProduct = async (updatedProduct, productId) => {
     try {
-      const res = await instance.put(`/products/${productId}`, updatedProduct);
-      this.products = this.products.map((product) =>
-        product._id === productId ? res.data : product
+      const formData = new FormData();
+      for (const key in updatedProduct)
+        formData.append(key, updatedProduct[key]);
+      const res = await axios.put(
+        `http://localhost:8000/products/${updatedProduct.id}`,
+        formData
       );
     } catch (error) {
       console.log("ProductStore -> updateProduct -> error", error);
